@@ -9,7 +9,6 @@ export const generateSummaryApi = async (payload: {
   skills: string[];
 }) => {
   const response = await axios.post("/api/ai/generate-summary", payload);
-
   return response.data;
 };
 
@@ -21,7 +20,6 @@ export const generateSkillsApi = async (payload: {
   experienceLevel: string;
 }) => {
   const response = await axios.post("/api/ai/generate-skills", payload);
-
   return response.data;
 };
 
@@ -31,11 +29,13 @@ export const generateSkillsApi = async (payload: {
 export const generateExperienceApi = async (payload: {
   jobRole: string;
   experienceLevel: string;
-  techStack?: string[];
+  techStack: string[];
   yearsOfExperience?: number;
 }) => {
-  const response = await axios.post("/api/ai/generate-experience", payload);
-
+  const response = await axios.post(
+    "/api/ai/generate-experience-description",
+    payload
+  );
   return response.data;
 };
 
@@ -43,15 +43,14 @@ export const generateExperienceApi = async (payload: {
  * Generate Project Description
  */
 export const generateProjectDescriptionApi = async (payload: {
-  jobRole: string;
-  projectTitle: string;
+  jobTitle: string;
+  experienceLevel: string;
   techStack: string[];
 }) => {
   const response = await axios.post(
     "/api/ai/generate-project-description",
     payload
   );
-
   return response.data;
 };
 
@@ -60,7 +59,6 @@ export const generateProjectDescriptionApi = async (payload: {
  */
 export const improveContentApi = async (payload: { content: string }) => {
   const response = await axios.post("/api/ai/improve-content", payload);
-
   return response.data;
 };
 
@@ -69,6 +67,5 @@ export const improveContentApi = async (payload: { content: string }) => {
  */
 export const getATSScoreApi = async (payload: { resumeText: string }) => {
   const response = await axios.post("/api/ai/ats-score", payload);
-
   return response.data;
 };

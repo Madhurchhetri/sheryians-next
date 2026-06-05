@@ -11,12 +11,20 @@ export const createResumeApi = async (payload: {
   experienceLevel: string;
 }) => {
   const response = await axios.post("/api/resume/create", payload);
+  return response.data;
+};
 
+export const getResumeApi = async (resumeId: string) => {
+  const response = await axios.get(`/api/resume/${resumeId}`);
+  return response.data;
+};
+
+export const updateResumeApi = async (resumeId: string, payload: any) => {
+  const response = await axios.patch(`/api/resume/${resumeId}`, payload);
   return response.data;
 };
 
 export const deleteResumeApi = async (resumeId: string) => {
   const response = await axios.delete(`/api/resume/${resumeId}`);
-
   return response.data;
 };

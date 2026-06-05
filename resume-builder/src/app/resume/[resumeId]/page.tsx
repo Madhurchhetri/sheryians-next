@@ -1,20 +1,28 @@
 "use client";
 
-import { useState } from "react";
-import { useParams } from "next/navigation";
+import { useEffect, useState } from "react";
+import { useParams, useRouter } from "next/navigation";
 import PersonalInfoStep from "@/components/PersonalInfoStep";
 import EducationStep from "@/components/EducationStep";
 import SkillsStep from "@/components/SkillsStep";
 import ProjectsStep from "@/components/ProjectSetup";
 import ExperienceStep from "@/components/ExperienceStep";
+import CertificationsStep from "@/components/CertificationsStep";
+import SummaryStep from "@/components/SummaryStep";
+import { Skeleton } from "@/components/ui/skeleton";
 
 export default function ResumeBuilderPage() {
   const params = useParams();
+  const router = useRouter();
 
   const resumeId = params.resumeId as string;
-  console.log("resume id", resumeId);
-
   const [step, setStep] = useState(1);
+
+  useEffect(() => {
+    if (step === 8) {
+      router.push(`/resume/${resumeId}/preview`);
+    }
+  }, [step, resumeId, router]);
 
   return (
     <>
@@ -54,14 +62,28 @@ export default function ResumeBuilderPage() {
         />
       )}
 
-      {/* Step 6 */}
-      {/* Achievements */}
+      {step === 6 && (
+        <CertificationsStep
+          resumeId={resumeId}
+          onBack={() => setStep(5)}
+          onNext={() => setStep(7)}
+        />
+      )}
 
-      {/* Step 7 */}
-      {/* Summary */}
+      {step === 7 && (
+        <SummaryStep
+          resumeId={resumeId}
+          onBack={() => setStep(6)}
+          onNext={() => setStep(8)}
+        />
+      )}
 
-      {/* Step 8 */}
-      {/* Preview */}
+      {step === 8 && (
+        <div className="min-h-screen bg-slate-50 flex flex-col justify-center items-center gap-4">
+          <Skeleton className="h-12 w-12 rounded-full bg-slate-200 animate-spin border-4 border-t-violet-600" />
+          <h2 className="text-xl font-semibold text-slate-700">Loading Resume Preview...</h2>
+        </div>
+      )}
     </>
   );
 }

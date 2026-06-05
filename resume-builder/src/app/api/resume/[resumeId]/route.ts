@@ -1,4 +1,4 @@
-import { getCurrentUser } from "@/lib/getCurrentUser";
+import { getCurrentUser, AuthError } from "@/lib/getCurrentUser";
 import { connectToMongoDB } from "@/lib/mongodb";
 import ResumeModel from "@/models/Resume.model";
 import { ApiResponse } from "@/types/api.types";
@@ -12,23 +12,23 @@ export async function GET(
     await connectToMongoDB();
 
     const user = await getCurrentUser();
-    console.log("userr in get resume", user);
+    console.log("User in GET resume:", user);
 
     const { resumeId } = await params;
-    console.log("in get resume ", resumeId);
+    console.log("Resume ID in GET:", resumeId);
 
     const resume = await ResumeModel.findOne({
       _id: resumeId,
-    //   user_id: user.userId,
+      user_id: user,
     });
 
-    console.log("resume milaaa", resume);
+    console.log("Resume found:", resume);
 
     if (!resume)
       return NextResponse.json<ApiResponse>(
         {
           success: false,
-          message: "Resume not found",
+          message: "Resume not found or unauthorized",
         },
         { status: 404 }
       );
@@ -41,8 +41,14 @@ export async function GET(
       },
       { status: 200 }
     );
-  } catch (error) {
+  } catch (error: any) {
     console.log("error in get resume api", error);
+    if (error instanceof AuthError) {
+      return NextResponse.json<ApiResponse>(
+        { success: false, message: error.message },
+        { status: error.statusCode }
+      );
+    }
     return NextResponse.json<ApiResponse>(
       {
         success: false,
@@ -61,20 +67,18 @@ export async function PATCH(
     await connectToMongoDB();
 
     const user = await getCurrentUser();
-
-    console.log("loggedin user", user);
+    console.log("User in PATCH resume:", user);
 
     const body = await req.json();
-    console.log("body-->", body);
+    console.log("PATCH body:", body);
 
     const { resumeId } = await params;
+    console.log("Resume ID in PATCH:", resumeId);
 
-    console.log("resume id", resumeId);
-
-    const updatedResume = await ResumeModel.findByIdAndUpdate(
+    const updatedResume = await ResumeModel.findOneAndUpdate(
       {
         _id: resumeId,
-        user_id: user.userId,
+        user_id: user,
       },
       {
         $set: body,
@@ -89,7 +93,7 @@ export async function PATCH(
       return NextResponse.json<ApiResponse>(
         {
           success: false,
-          message: "resume failed to update",
+          message: "Resume failed to update or unauthorized",
         },
         { status: 400 }
       );
@@ -102,8 +106,63 @@ export async function PATCH(
       },
       { status: 200 }
     );
-  } catch (error) {
-    console.log("error in updatedResume api", error);
+  } catch (error: any) {
+    console.log("error in update resume api", error);
+    if (error instanceof AuthError) {
+      return NextResponse.json<ApiResponse>(
+        { success: false, message: error.message },
+        { status: error.statusCode }
+      );
+    }
+    return NextResponse.json<ApiResponse>(
+      {
+        success: false,
+        message: "Something went wrong",
+      },
+      { status: 500 }
+    );
+  }
+}
+
+export async function DELETE(
+  req: NextRequest,
+  { params }: { params: Promise<{ resumeId: string }> }
+) {
+  try {
+    await connectToMongoDB();
+
+    const user = await getCurrentUser();
+    const { resumeId } = await params;
+
+    const deletedResume = await ResumeModel.findOneAndDelete({
+      _id: resumeId,
+      user_id: user,
+    });
+
+    if (!deletedResume)
+      return NextResponse.json<ApiResponse>(
+        {
+          success: false,
+          message: "Resume not found or unauthorized",
+        },
+        { status: 404 }
+      );
+
+    return NextResponse.json<ApiResponse>(
+      {
+        success: true,
+        message: "Resume deleted successfully",
+      },
+      { status: 200 }
+    );
+  } catch (error: any) {
+    console.log("error in delete resume api", error);
+    if (error instanceof AuthError) {
+      return NextResponse.json<ApiResponse>(
+        { success: false, message: error.message },
+        { status: error.statusCode }
+      );
+    }
     return NextResponse.json<ApiResponse>(
       {
         success: false,
